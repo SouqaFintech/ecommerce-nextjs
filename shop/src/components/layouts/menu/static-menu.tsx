@@ -6,6 +6,7 @@ import { siteSettings } from '@/config/site';
 const StaticMenu = () => {
   const { t } = useTranslation('common');
   const { headerLinks } = siteSettings;
+
   return (
     <>
       {headerLinks?.slice(0, 3)?.map(({ href, label, icon }) => (
@@ -19,6 +20,8 @@ const StaticMenu = () => {
           </Link>
         </li>
       ))}
+
+      {/* 
       <li className="menuItem group relative mx-3 cursor-pointer py-3 xl:mx-4">
         <div className="flex items-center gap-2 group-hover:text-accent">
           <span className="text-brand-dark group-hover:text-brand relative inline-flex items-center py-2 font-normal rtl:left-0">
@@ -32,7 +35,7 @@ const StaticMenu = () => {
             ?.map(({ href, label }, index) => (
               <li
                 className="menu-child-item font-chivo hover:filter-green group py-[10px] px-[22px] transition-all duration-200 hover:pl-[25px] hover:opacity-100"
-                key={index}
+                key={`${href}${label}`}
               >
                 <Link
                   href={href}
@@ -44,6 +47,7 @@ const StaticMenu = () => {
             ))}
         </ul>
       </li>
+      */}
     </>
   );
 };

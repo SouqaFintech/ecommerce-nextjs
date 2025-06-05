@@ -108,22 +108,22 @@ export const siteSettings = {
   },
   headerLinks: [
     { href: Routes.shops, icon: null, label: 'nav-menu-shops' },
-    { href: Routes.coupons, icon: null, label: 'nav-menu-offer' },
+    // { href: Routes.coupons, icon: null, label: 'nav-menu-offer' },
     { href: Routes.contactUs, label: 'nav-menu-contact' },
     {
       href: Routes.becomeSeller,
       label: 'Become a seller',
     },
-    { href: Routes.flashSale, label: 'nav-menu-flash-sale' },
-    { href: Routes.manufacturers, label: 'text-manufacturers' },
-    { href: Routes.authors, label: 'text-authors' },
-    { href: Routes.help, label: 'nav-menu-faq' },
-    { href: Routes.terms, label: 'nav-menu-terms' },
-    { href: Routes.customerRefundPolicies, label: 'nav-menu-refund-policy' },
-    {
-      href: Routes.vendorRefundPolicies,
-      label: 'nav-menu-vendor-refund-policy',
-    },
+    // { href: Routes.flashSale, label: 'nav-menu-flash-sale' },
+    // { href: Routes.manufacturers, label: 'text-manufacturers' },
+    // { href: Routes.authors, label: 'text-authors' },
+    // { href: Routes.help, label: 'nav-menu-faq' },
+    // { href: Routes.terms, label: 'nav-menu-terms' },
+    // { href: Routes.customerRefundPolicies, label: 'nav-menu-refund-policy' },
+    // {
+    //   href: Routes.vendorRefundPolicies,
+    //   label: 'nav-menu-vendor-refund-policy',
+    // },
   ],
   footer: {
     // copyright: {
