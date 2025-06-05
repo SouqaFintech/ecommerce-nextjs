@@ -41,8 +41,8 @@ Axios.interceptors.response.use(
 );
 
 export class HttpClient {
-  static async get<T>(url: string, params?: unknown) {
-    const response = await Axios.get<T>(url, { params });
+  static async get<T>(url: string, params?: unknown, options?: any) {
+    const response = await Axios.get<T>(url, { params, ...options });
     return response.data;
   }
 
@@ -51,13 +51,13 @@ export class HttpClient {
     return response.data;
   }
 
-  static async put<T>(url: string, data: unknown) {
-    const response = await Axios.put<T>(url, data);
+  static async put<T>(url: string, data: unknown, options?: any) {
+    const response = await Axios.put<T>(url, data, options);
     return response.data;
   }
 
-  static async delete<T>(url: string) {
-    const response = await Axios.delete<T>(url);
+  static async delete<T>(url: string, options?: any) {
+    const response = await Axios.delete<T>(url, options);
     return response.data;
   }
 
