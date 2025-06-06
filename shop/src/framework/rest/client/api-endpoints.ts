@@ -1,13 +1,15 @@
-const oldnest = process.env.NEXT_PUBLIC_REST_API_ENDPOINT;
+const oldnest = "http://localhost:9000/api";
+const __newnext = "http://localhost:3003/api";
+// oldnest = "";
 export const API_ENDPOINTS = {
-  PRODUCTS                            : '/api/products',
+  PRODUCTS                            : __newnext + '/products',
   PRODUCTS_POPULAR                    : oldnest + '/popular-products',
   PRODUCTS_REVIEWS                    : oldnest + '/reviews',
   PRODUCTS_REVIEWS_ABUSE_REPORT       : oldnest + '/abusive_reports',
   PRODUCTS_QUESTIONS                  : oldnest + '/questions',
   FEEDBACK                            : oldnest + '/feedbacks',
   CATEGORIES                          : oldnest + '/categories',
-  TYPES                               : oldnest + '/types',
+  TYPES                               : __newnext + '/types',
   TAGS                                : oldnest + '/tags',
   SHOPS                               : oldnest + '/shops',
   AUTHORS                             : oldnest + '/authors',

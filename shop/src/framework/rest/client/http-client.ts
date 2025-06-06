@@ -6,7 +6,11 @@ import Cookies from 'js-cookie';
 import Router from 'next/router';
 
 const Axios = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_REST_API_ENDPOINT,
+  // baseURL: process.env.NEXT_PUBLIC_REST_API_ENDPOINT,
+  proxy: {
+    host: '127.0.0.1',
+    port: 8080,
+  },
   timeout: 5000000,
   headers: {
     'Content-Type': 'application/json',
@@ -37,13 +41,27 @@ Axios.interceptors.response.use(
       Router.replace(Routes.home);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export class HttpClient {
-  static async get<T>(url: string, params?: unknown, options?: any) {
-    const response = await Axios.get<T>(url, { params, ...options });
-    return response.data;
+  static async get<T>(url: string, params?: unknown) {
+    try {
+      const response = await Axios.get<T>(url, { params });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('HTTP GET Error:', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          config: error.config,
+        });
+      } else {
+        //print out error to console
+        console.error('HTTP GET Error:', error);
+      }
+    }
   }
 
   static async post<T>(url: string, data: unknown, options?: any) {
@@ -51,13 +69,13 @@ export class HttpClient {
     return response.data;
   }
 
-  static async put<T>(url: string, data: unknown, options?: any) {
-    const response = await Axios.put<T>(url, data, options);
+  static async put<T>(url: string, data: unknown) {
+    const response = await Axios.put<T>(url, data);
     return response.data;
   }
 
-  static async delete<T>(url: string, options?: any) {
-    const response = await Axios.delete<T>(url, options);
+  static async delete<T>(url: string) {
+    const response = await Axios.delete<T>(url);
     return response.data;
   }
 
@@ -65,9 +83,16 @@ export class HttpClient {
     return Object.entries(params)
       .filter(([, value]) => Boolean(value))
       .map(([k, v]) =>
-        ['type', 'categories', 'tags', 'author', 'manufacturer','shops'].includes(k)
+        [
+          'type',
+          'categories',
+          'tags',
+          'author',
+          'manufacturer',
+          'shops',
+        ].includes(k)
           ? `${k}.slug:${v}`
-          : `${k}:${v}`
+          : `${k}:${v}`,
       )
       .join(';');
   }

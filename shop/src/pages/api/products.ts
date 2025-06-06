@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ProductsController } from '@/server/products/products.controller';
-import { ProductsService } from '@/server/products/products.service';
+import { ProductsController } from '@/server/domains/products/products.controller';
+import { ProductsService } from '@/server/domains/products/products.service';
 
 export default async function handler(
   req: NextApiRequest,
