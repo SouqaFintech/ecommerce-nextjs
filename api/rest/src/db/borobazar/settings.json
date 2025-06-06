@@ -18,7 +18,7 @@
       "thumbnail": "https://pickbazarlaravel.s3.ap-southeast-1.amazonaws.com/860/conversions/PickBazar-thumbnail.jpg"
     },
     "useOtp": false,
-    "currency": "USD",
+    "currency": "MYR",
     "taxClass": 1,
     "siteTitle": "Pickbazar",
     "deliveryTime": [
