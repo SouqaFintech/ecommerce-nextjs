@@ -61,6 +61,7 @@ export class HttpClient {
         //print out error to console
         console.error('HTTP GET Error:', error);
       }
+      debugger;
     }
   }
 

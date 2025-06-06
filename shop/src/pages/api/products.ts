@@ -18,6 +18,15 @@ export default async function handler(
   }
 
   if (req.method === 'GET') {
+    const { searchJoin, with: withQuery, limit, language, search } = req.query;
+    const queryParams = {
+      searchJoin: searchJoin as string,
+      with: withQuery as string,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      language: language as string,
+      search: search as string,
+    };
+
     const products = pc.getProducts(req.query);
     return products.then((data) => res.status(200).json(data));
   }
