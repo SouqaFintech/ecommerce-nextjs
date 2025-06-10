@@ -1,5 +1,5 @@
-import { PaginationArgs } from '@/server/common/dto/pagination-args.dto';
-import { Paginator } from '@/server/common/dto/paginator.dto';
+import { PaginationArgs } from '@/server/domains/common/dto/pagination-args.dto';
+import { Paginator } from '@/server/domains/common/dto/paginator.dto';
 
 import { Product } from '../entities/product.entity';
 

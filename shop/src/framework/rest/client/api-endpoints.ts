@@ -1,15 +1,15 @@
 const oldnest = "http://localhost:9000/api";
-const __newnext = "http://localhost:3003/api";
+const monoapi = "http://localhost:3003/api";
 // oldnest = "";
 export const API_ENDPOINTS = {
-  PRODUCTS                            : __newnext + '/products',
+  PRODUCTS                            : monoapi + '/products',
   PRODUCTS_POPULAR                    : oldnest + '/popular-products',
   PRODUCTS_REVIEWS                    : oldnest + '/reviews',
   PRODUCTS_REVIEWS_ABUSE_REPORT       : oldnest + '/abusive_reports',
   PRODUCTS_QUESTIONS                  : oldnest + '/questions',
   FEEDBACK                            : oldnest + '/feedbacks',
-  CATEGORIES                          : __newnext + '/categories',
-  TYPES                               : __newnext + '/types',
+  CATEGORIES                          : monoapi + '/categories',
+  TYPES                               : monoapi + '/types',
   TAGS                                : oldnest + '/tags',
   SHOPS                               : oldnest + '/shops',
   AUTHORS                             : oldnest + '/authors',
@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
   USERS                               : oldnest + '/users',
   USERS_ADDRESS                       : oldnest + '/address',
   USERS_ME                            : oldnest + '/me',
+  // USERS_LOGIN                         : monoapi + '/auth-x/token',
   USERS_LOGIN                         : oldnest + '/token',
   USERS_REGISTER                      : oldnest + '/register',
   USERS_FORGOT_PASSWORD               : oldnest + '/forget-password',
@@ -44,7 +45,7 @@ export const API_ENDPOINTS = {
   VERIFY_OTP_CODE                     : oldnest + '/verify-otp-code',
   OTP_LOGIN                           : oldnest + '/otp-login',
   UPDATE_CONTACT                      : oldnest + '/update-contact',
-  SETTINGS                            : __newnext + '/settings',
+  SETTINGS                            : monoapi + '/settings',
   UPLOADS                             : oldnest + '/attachments',
   MY_QUESTIONS                        : oldnest + '/my-questions',
   MY_REPORTS                          : oldnest + '/my-reports',

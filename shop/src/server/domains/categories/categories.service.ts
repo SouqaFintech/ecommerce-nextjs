@@ -4,7 +4,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
 import Fuse from 'fuse.js';
 import categoriesJson from '@/server/db/categories.json';
-import { paginate } from '@/server/common/pagination/paginate';
+import { paginate } from '@/server/domains/common/pagination/paginate';
 
 const categories: Category[] = categoriesJson as unknown as Category[];
 const options = {

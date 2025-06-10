@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { GetProductsDto, ProductPaginator } from './dto/get-products.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-import { paginate } from '@/server/common/pagination/paginate';
+import { paginate } from '@/server/domains/common/pagination/paginate';
 import productsJson from '@/server/db/products.json';
 import popularProductsJson from '@/server/db/popular-products.json';
 import bestSellingProductsJson from '@/server/db/best-selling-products.json';

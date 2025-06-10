@@ -1,6 +1,6 @@
-import { SortOrder } from '@/server/common/dto/generic-conditions.dto';
-import { PaginationArgs } from '@/server/common/dto/pagination-args.dto';
-import { Paginator } from '@/server/common/dto/paginator.dto';
+import { SortOrder } from '@/server/domains/common/dto/generic-conditions.dto';
+import { PaginationArgs } from '@/server/domains/common/dto/pagination-args.dto';
+import { Paginator } from '@/server/domains/common/dto/paginator.dto';
 
 import { Category } from '../entities/category.entity';
 

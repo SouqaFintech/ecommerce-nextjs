@@ -14,15 +14,6 @@ export default async function handler(
 
   if (req.method === 'GET') {
     const typeSlug = (req.query.slug as string[])[0];
-
-    // const { /*orderBy,*/ text, language, search } = req.query;
-    // const dto: GetTypesDto = {
-    //   // orderBy: orderBy as QueryTypesOrderByOrderByClause[],
-    //   text: text as string,
-    //   language: language as string,
-    //   search: search as string,
-    // };
-
     const type = controller.getTypeBySlug(typeSlug);
     return res.status(200).json(type);
   }
