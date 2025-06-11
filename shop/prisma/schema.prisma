@@ -1,0 +1,495 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// export class User extends CoreEntity {
+//   name: string;
+//   email: string;
+//   password?: string;
+//   profile?: Profile;
+//   shops?: Shop[];
+//   managed_shop?: Shop;
+//   is_active?: boolean = true;
+//   address?: Address[];
+//   permissions?: Permission[];
+//   // orders?: Order[];
+//   wallet?: any;
+// }
+
+model User {
+  id            String       @id @default(cuid())
+  name          String
+  email         String       @unique
+  password      String?
+  profile       Profile?
+  shops         Shop[]
+  managedShop   Shop?        @relation("ManagedShop", fields: [managedShopId], references: [id])
+  managedShopId String?      @map("managed_shop_id")
+  isActive      Boolean      @default(true) @map("is_active")
+  address       Address[]
+  permissions   Permission[]
+  wallet        Json?
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+}
+
+model Permission {
+  id        String   @id @default(cuid())
+  name      String?
+  guardName String?  @map("guard_name")
+  pivot     Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Profile {
+  id         String      @id @default(cuid())
+  avatarId   String?     @map("avatar_id")
+  avatar     Attachment? @relation(fields: [avatarId], references: [id])
+  bio        String?
+  socials    Social[]
+  contact    String?
+  customer   User?       @relation(fields: [customerId], references: [id])
+  customerId String?     @map("customer_id")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+}
+
+model Address {
+  id         String      @id @default(cuid())
+  title      String
+  isDefault  Boolean     @default(false) @map("default")
+  address    UserAddress @relation(fields: [addressId], references: [id])
+  addressId  Int         @map("address_id")
+  type       AddressType
+  customer   User        @relation(fields: [customerId], references: [id])
+  customerId String      @map("customer_id")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+}
+
+model UserAddress {
+  id            Int      @id @default(autoincrement())
+  streetAddress String   @map("street_address")
+  country       String
+  city          String
+  state         String
+  zip           String
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+}
+
+model Shop {
+  id            String        @id @default(cuid())
+  ownerId       String        @map("owner_id")
+  owner         User          @relation(fields: [ownerId], references: [id])
+  staffs        User[]        @relation("ShopStaffs")
+  isActive      Boolean       @default(true) @map("is_active")
+  ordersCount   Int           @default(0) @map("orders_count")
+  productsCount Int           @default(0) @map("products_count")
+  balanceId     String?       @map("balance_id")
+  balance       Balance?      @relation(fields: [balanceId], references: [id])
+  name          String
+  slug          String        @unique
+  description   String?
+  coverImageId  String        @map("cover_image_id")
+  coverImage    Attachment    @relation("ShopCoverImage", fields: [coverImageId], references: [id])
+  logoId        String?       @map("logo_id")
+  logo          Attachment?   @relation("ShopLogo", fields: [logoId], references: [id])
+  addressId     Int           @map("address_id")
+  address       UserAddress   @relation(fields: [addressId], references: [id])
+  settingsId    String?       @map("settings_id")
+  settings      ShopSettings? @relation(fields: [settingsId], references: [id])
+  distance      String?
+  lat           String?
+  lng           String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+}
+
+model Balance {
+  id                  String       @id @default(cuid())
+  adminCommissionRate Float        @map("admin_commission_rate")
+  shopId              String       @map("shop_id")
+  shop                Shop         @relation(fields: [shopId], references: [id])
+  totalEarnings       Float        @map("total_earnings")
+  withdrawnAmount     Float        @map("withdrawn_amount")
+  currentBalance      Float        @map("current_balance")
+  paymentInfo         PaymentInfo? @relation(fields: [paymentInfoId], references: [id])
+  paymentInfoId       String?      @map("payment_info_id")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+}
+
+model PaymentInfo {
+  id        String   @id @default(cuid())
+  account   String
+  name      String
+  email     String
+  bank      String
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model ShopSettings {
+  id        String   @id @default(cuid())
+  socials   Json     @map("socials")
+  contact   String
+  location  Json     @map("location")
+  website   String
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Social {
+  id        String   @id @default(cuid())
+  type      String
+  link      String
+  profileId String   @map("profile_id")
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Category {
+  id                  String      @id @default(cuid())
+  name                String
+  slug                String      @unique
+  parentId            String?     @map("parent_id")
+  parent              Category?   @relation("CategoryParent", fields: [parentId], references: [id])
+  children            Category[]  @relation("CategoryParent")
+  details             String?
+  imageId             String?     @map("image_id")
+  image               Attachment? @relation(fields: [imageId], references: [id])
+  icon                String?
+  type                String?
+  products            Product[]   @relation("CategoryProducts")
+  language            String
+  translatedLanguages String[]    @map("translated_languages")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  thumbnail String
+  original  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Product {
+  id                  String              @id @default(cuid())
+  name                String
+  slug                String              @unique
+  type                ProductType?
+  typeId              Int                 @map("type_id")
+  productType         String              @map("product_type")
+  categories          Category[]          @relation("CategoryProducts")
+  tags                Tag[]               @relation("ProductTags")
+  variations          AttributeValue[]    @relation("ProductVariations")
+  variationOptions    Variation[]         @relation("ProductVariationOptions")
+  orderItems          OrderProductPivot[] @relation("OrderProducts")
+  shopId              Int                 @map("shop_id")
+  shop                Shop                @relation(fields: [shopId], references: [id])
+  relatedProducts     Product[]           @relation("RelatedProducts")
+  description         String
+  inStock             Boolean             @map("in_stock")
+  isTaxable           Boolean             @map("is_taxable")
+  salePrice           Float?              @map("sale_price")
+  maxPrice            Float?              @map("max_price")
+  minPrice            Float?              @map("min_price")
+  sku                 String?
+  gallery             Attachment[]        @relation("ProductGallery")
+  image               Attachment?         @relation(fields: [imageId], references: [id])
+  imageId             String?             @map("image_id")
+  status              ProductStatus       @default(DRAFT) @map("status")
+  height              String?
+  length              String?
+  width               String?
+  price               Float?
+  quantity            Int
+  unit                String
+  ratings             Int
+  inWishlist          Boolean             @map("in_wishlist")
+  myReview            Review[]            @relation("ProductReviews")
+  language            String?
+  translatedLanguages String[]            @map("translated_languages")
+  visibility          String?
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+}
+
+model Review {
+  id                     String       @id @default(cuid())
+  rating                 Int
+  name                   String
+  comment                String
+  shop                   Shop         @relation(fields: [shopId], references: [id])
+  shopId                 String       @map("shop_id")
+  order                  Order        @relation(fields: [orderId], references: [id])
+  orderId                String       @map("order_id")
+  customer               User         @relation(fields: [customerId], references: [id])
+  customerId             String       @map("customer_id")
+  photos                 Attachment[]
+  user                   User         @relation("UserReviews", fields: [userId], references: [id])
+  userId                 String       @map("user_id")
+  product                Product      @relation(fields: [productId], references: [id])
+  productId              String       @map("product_id")
+  feedbacks              Feedback[]
+  positiveFeedbacksCount Int          @default(0) @map("positive_feedbacks_count")
+  negativeFeedbacksCount Int          @default(0) @map("negative_feedbacks_count")
+  abusiveReports         Report[]
+  abusiveReportsCount    Int?         @default(0) @map("abusive_reports_count")
+  variationOptionId      String?      @map("variation_option_id")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt              DateTime     @updatedAt @map("updated_at")
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  modelType String   @map("model_type")
+  modelId   String   @map("model_id")
+  positive  Boolean?
+  negative  Boolean?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  modelId   Int      @map("model_id")
+  modelType String   @map("model_type")
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+// TODO doesnt it needs any relationship with Product and Order?
+//answer: Yes, it does. The OrderProductPivot model is used to create a many-to-many relationship between the Product and Order models, allowing for the storage of additional information about the product in the context of an order, such as quantity, unit price, and subtotal.  
+model OrderProductPivot {
+  id                String   @id @default(cuid())
+  orderId           String   @map("order_id")
+  order             Order    @relation("OrderProducts", fields: [orderId], references: [id])
+  productId         String   @map("product_id")
+  product           Product  @relation("OrderProducts", fields: [productId], references: [id])
+  variationOptionId Int?     @map("variation_option_id")
+  orderQuantity     Int      @map("order_quantity")
+  unitPrice         Float    @map("unit_price")
+  subtotal          Float
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+}
+
+model Variation {
+  id        Int               @id @default(autoincrement())
+  title     String
+  price     Float
+  sku       String
+  isDisable Boolean           @map("is_disable")
+  salePrice Float?            @map("sale_price")
+  quantity  Int
+  options   VariationOption[]
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+}
+
+model VariationOption {
+  id          Int        @id @default(autoincrement())
+  name        String
+  value       String
+  variation   Variation? @relation(fields: [variationId], references: [id])
+  variationId Int?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+}
+
+model File {
+  id           String   @id @default(cuid())
+  attachmentId Int      @map("attachment_id")
+  url          String
+  fileableId   Int      @map("fileable_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+}
+
+model Tag {
+  id                  String      @id @default(cuid())
+  name                String
+  slug                String      @unique
+  parentId            String?     @map("parent_id")
+  parent              Tag?        @relation("TagParent", fields: [parentId], references: [id])
+  children            Tag[]       @relation("TagParent")
+  details             String?
+  imageId             String?     @map("image_id")
+  image               Attachment? @relation(fields: [imageId], references: [id])
+  icon                String?
+  type                String?
+  products            Product[]   @relation("ProductTags")
+  language            String
+  translatedLanguages String[]    @map("translated_languages")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+}
+
+model Attribute {
+  id                  String           @id @default(cuid())
+  name                String
+  shopId              String           @map("shop_id")
+  shop                Shop             @relation(fields: [shopId], references: [id])
+  slug                String           @unique
+  values              AttributeValue[]
+  language            String
+  translatedLanguages String[]         @map("translated_languages")
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+}
+
+model AttributeValue {
+  id          String    @id @default(cuid())
+  shopId      String    @map("shop_id")
+  shop        Shop      @relation(fields: [shopId], references: [id])
+  value       String
+  meta        String?
+  attribute   Attribute @relation(fields: [attributeId], references: [id])
+  attributeId String    @map("attribute_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+}
+
+enum ProductStatus {
+  PUBLISH
+  DRAFT
+}
+
+enum ProductType {
+  SIMPLE
+  VARIABLE
+}
+
+enum PaymentGatewayType {
+  STRIPE
+  CASH_ON_DELIVERY
+  CASH
+  FULL_WALLET_PAYMENT
+  PAYPAL
+  RAZORPAY
+}
+
+enum OrderStatusType {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  FAILED
+  AT_LOCAL_FACILITY
+  OUT_FOR_DELIVERY
+}
+
+enum PaymentStatusType {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  REVERSAL
+  CASH_ON_DELIVERY
+  CASH
+  WALLET
+  AWAITING_FOR_APPROVAL
+}
+
+model Order {
+  id                    String              @id @default(cuid())
+  trackingNumber        String              @map("tracking_number")
+  customerId            Int                 @map("customer_id")
+  customerContact       String              @map("customer_contact")
+  customer              User                @relation(fields: [customerId], references: [id])
+  parentOrderId         String?             @map("parent_order_id")
+  parentOrder           Order?              @relation("OrderParent", fields: [parentOrderId], references: [id])
+  children              Order[]             @relation("OrderParent")
+  items                 OrderProductPivot[] @relation("OrderProducts")
+  orderStatus           OrderStatusType     @default(PENDING) @map("order_status")
+  paymentStatus         PaymentStatusType   @default(PENDING) @map("payment_status")
+  amount                Float
+  salesTax              Float               @map("sales_tax")
+  total                 Float
+  paidTotal             Float               @map("paid_total")
+  paymentId             String?             @map("payment_id")
+  paymentGateway        PaymentGatewayType
+  couponId              Int?                @map("coupon_id")
+  coupon                Coupon?             @relation(fields: [couponId], references: [id])
+  shopId                Int                 @map("shop_id")
+  shop                  Shop                @relation(fields: [shopId], references: [id])
+  discount              Float?
+  deliveryFee           Float               @map("delivery_fee")
+  deliveryTime          String              @map("delivery_time")
+  products              Product[]           @relation("OrderProducts")
+  billingAddressId      Int                 @map("billing_address_id")
+  billingAddress        UserAddress         @relation(fields: [billingAddressId], references: [id])
+  //Error validating model "Order": Ambiguous relation detected. The fields `billingAddress` and `shippingAddress` in model `Order` both refer to `UserAddress`. Please provide different relation names for them by adding `@relation(<name>).
+  shippingAddressId     Int                 @map("shipping_address_id")
+  shippingAddress       UserAddress         @relation(fields: [shippingAddressId], references: [id])
+  language              String
+  translatedLanguages   String[]            @map("translated_languages")
+  paymentIntent         PaymentIntent?
+  alteredPaymentGateway String?             @map("altered_payment_gateway")
+}
+
+model Coupon {
+  id                  String      @id @default(cuid())
+  code                String      @unique
+  description         String?
+  minimumCartAmount   Float       @map("minimum_cart_amount")
+  orders              Order[]     @relation("CouponOrders")
+  type                CouponType  @default(FIXED)
+  imageId             String?     @map("image_id")
+  image               Attachment? @relation(fields: [imageId], references: [id])
+  isValid             Boolean     @default(false) @map("is_valid")
+  amount              Float
+  activeFrom          DateTime    @map("active_from")
+  expireAt            DateTime    @map("expire_at")
+  language            String
+  translatedLanguages String[]    @map("translated_languages")
+  target              Boolean?
+  shopId              Int?        @map("shop_id")
+  shop                Shop?       @relation(fields: [shopId], references: [id])
+  isApprove           Boolean?    @default(false) @map("is_approve")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+}
+
+enum CouponType {
+  FIXED
+  PERCENTAGE
+  FREE_SHIPPING
+}
+
+model PaymentIntent {
+  id                Int                @id @default(autoincrement())
+  orderId           Int                @map("order_id")
+  order             Order              @relation(fields: [orderId], references: [id])
+  trackingNumber    String             @map("tracking_number")
+  paymentGateway    PaymentGatewayType @map("payment_gateway")
+  paymentIntentInfo Json               @map("payment_intent_info")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+}
