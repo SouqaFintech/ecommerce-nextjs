@@ -14,20 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// export class User extends CoreEntity {
-//   name: string;
-//   email: string;
-//   password?: string;
-//   profile?: Profile;
-//   shops?: Shop[];
-//   managed_shop?: Shop;
-//   is_active?: boolean = true;
-//   address?: Address[];
-//   permissions?: Permission[];
-//   // orders?: Order[];
-//   wallet?: any;
-// }
-
 model User {
   id            String       @id @default(cuid())
   name          String
@@ -38,11 +24,17 @@ model User {
   managedShop   Shop?        @relation("ManagedShop", fields: [managedShopId], references: [id])
   managedShopId String?      @map("managed_shop_id")
   isActive      Boolean      @default(true) @map("is_active")
-  address       Address[]
+  address       UserAddress[]
   permissions   Permission[]
   wallet        Json?
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
+  Review        Review[]
+  Feedback      Feedback[]
+  Report        Report[]
+  Order         Order[]
+  ShopOwner    Shop[]        @relation("ShopOwner")
+  ShopStaffs   Shop[]        @relation("ShopStaffs")
 }
 
 model Permission {
@@ -52,6 +44,8 @@ model Permission {
   pivot     Json?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
 }
 
 model Profile {
@@ -67,61 +61,89 @@ model Profile {
   updatedAt  DateTime    @updatedAt @map("updated_at")
 }
 
-enum AddressType {
-  BILLING
-  SHIPPING
+model Address {
+  id            String          @id             @default(cuid())
+  title         String
+  refName       String          @map("ref_name")
+  buildingName  String?         @map("building_name")
+  streetAddress String          @map("street_address")
+  location      Json?           @map("geolocation")
+  country       String
+  city          String
+  state         String
+  zip           String
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt      @map("updated_at")
+
+  UserAddress  UserAddress      @relation("UserAddress")
 }
 
-model Address {
-  id         String      @id @default(cuid())
-  title      String
-  isDefault  Boolean     @default(false) @map("default")
-  address    UserAddress @relation(fields: [addressId], references: [id])
-  addressId  Int         @map("address_id")
-  type       AddressType
-  customer   User        @relation(fields: [customerId], references: [id])
-  customerId String      @map("customer_id")
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
+enum UserAddressType {
+  HOME
+  WORK
 }
 
 model UserAddress {
-  id            Int      @id @default(autoincrement())
+  id            String          @id @default(cuid())
+  type          UserAddressType @default(HOME)
+  addressId     String          @map("address_id")
+  address       Address         @relation(fields: [addressId], references: [id])
+  customer      User            @relation(fields: [customerId], references: [id])
+  customerId    String          @map("customer_id")
+  isDefault     Boolean         @default(false) @map("default")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+}
+
+model Shop {
+  id             String           @id @default(cuid())
+  ownerId        String           @map("owner_id")
+  owner          User             @relation("ShopOwner", fields: [ownerId], references: [id])
+  staffs         User[]           @relation("ShopStaffs")
+  isActive       Boolean          @default(true) @map("is_active")
+  ordersCount    Int              @default(0) @map("orders_count")
+  productsCount  Int              @default(0) @map("products_count")
+  balanceId      String?          @map("balance_id")
+  balance        Balance?         @relation(fields: [balanceId], references: [id])
+  name           String
+  slug           String           @unique
+  description    String?
+  coverImageId   String           @map("cover_image_id")
+  coverImage     Attachment       @relation("ShopCoverImage", fields: [coverImageId], references: [id])
+  logoId         String?          @map("logo_id")
+  logo           Attachment?      @relation("ShopLogo", fields: [logoId], references: [id])
+  addressId      Int              @map("address_id")
+  address        ShopAddress      @relation(fields: [addressId], references: [id])
+  settingsId     String?          @map("settings_id")
+  settings       ShopSettings?    @relation(fields: [settingsId], references: [id])
+  distance       String?
+  lat            String?
+  lng            String?
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  User           User[]
+  Product        Product[]
+  Review         Review[]
+  Attribute      Attribute[]
+  AttributeValue AttributeValue[]
+  Order          Order[]
+  Coupon         Coupon[]
+}
+
+model ShopAddress {
+  id            String   @id @default(cuid())
+  receiverName  String   @map("receiver_name")
+  houseNumber   String?  @map("house_number")
+  buildingName  String?  @map("building_name")
   streetAddress String   @map("street_address")
+  geolocation   Json?    @map("geolocation")
   country       String
   city          String
   state         String
   zip           String
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
-}
-
-model Shop {
-  id            String        @id @default(cuid())
-  ownerId       String        @map("owner_id")
-  owner         User          @relation(fields: [ownerId], references: [id])
-  staffs        User[]        @relation("ShopStaffs")
-  isActive      Boolean       @default(true) @map("is_active")
-  ordersCount   Int           @default(0) @map("orders_count")
-  productsCount Int           @default(0) @map("products_count")
-  balanceId     String?       @map("balance_id")
-  balance       Balance?      @relation(fields: [balanceId], references: [id])
-  name          String
-  slug          String        @unique
-  description   String?
-  coverImageId  String        @map("cover_image_id")
-  coverImage    Attachment    @relation("ShopCoverImage", fields: [coverImageId], references: [id])
-  logoId        String?       @map("logo_id")
-  logo          Attachment?   @relation("ShopLogo", fields: [logoId], references: [id])
-  addressId     Int           @map("address_id")
-  address       UserAddress   @relation(fields: [addressId], references: [id])
-  settingsId    String?       @map("settings_id")
-  settings      ShopSettings? @relation(fields: [settingsId], references: [id])
-  distance      String?
-  lat           String?
-  lng           String?
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  Shop          Shop[]
 }
 
 model Balance {
@@ -134,16 +156,19 @@ model Balance {
   currentBalance      Float        @map("current_balance")
   paymentInfo         PaymentInfo? @relation(fields: [paymentInfoId], references: [id])
   paymentInfoId       String?      @map("payment_info_id")
+  createdAt           DateTime     @default(now()) @map("created_at")
   updatedAt           DateTime     @updatedAt @map("updated_at")
 }
 
 model PaymentInfo {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   account   String
   name      String
   email     String
   bank      String
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  Balance   Balance[]
 }
 
 model ShopSettings {
@@ -152,7 +177,9 @@ model ShopSettings {
   contact   String
   location  Json     @map("location")
   website   String
+  createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  Shop      Shop[]
 }
 
 model Social {
@@ -190,6 +217,29 @@ model Attachment {
   original  String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  coverForShops  Shop[]           @relation("ShopCoverImage")
+  logoForShops   Shop[]           @relation("ShopLogo")
+  Profile        Profile[]
+  Category       Category[]
+  Review         Review?          @relation(fields: [reviewId], references: [id])
+  reviewId       String?
+  Tag            Tag[]
+  Coupon         Coupon[]
+  ProductGallery ProductGalleryAttachment[]
+  Product        Product[]
+}
+
+model ProductGalleryAttachment {
+  id           String     @id @default(cuid())
+  productId    String?    @map("product_id")
+  product      Product?   @relation(fields: [productId], references: [id])
+  attachmentId String     @map("attachment_id")
+  attachment   Attachment @relation(fields: [attachmentId], references: [id])
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("product_gallery_attachments")
 }
 
 model Product {
@@ -214,9 +264,9 @@ model Product {
   maxPrice            Float?              @map("max_price")
   minPrice            Float?              @map("min_price")
   sku                 String?
-  gallery             Attachment[]        @relation("ProductGallery")
-  image               Attachment?         @relation(fields: [imageId], references: [id])
+  gallery             ProductGalleryAttachment[]
   imageId             String?             @map("image_id")
+  image               Attachment?         @relation("ProductImage", fields: [imageId], references: [id])
   status              ProductStatus       @default(DRAFT) @map("status")
   height              String?
   length              String?
@@ -232,6 +282,12 @@ model Product {
   visibility          String?
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
+  
+  Review              Review[]
+  Order               Order?              @relation(fields: [orderId], references: [id])
+  orderId             String?
+  Variation           Variation[]
+  AttributeValue      AttributeValue[]
 }
 
 model Review {
@@ -243,8 +299,6 @@ model Review {
   shopId                 String       @map("shop_id")
   order                  Order        @relation(fields: [orderId], references: [id])
   orderId                String       @map("order_id")
-  customer               User         @relation(fields: [customerId], references: [id])
-  customerId             String       @map("customer_id")
   photos                 Attachment[]
   user                   User         @relation("UserReviews", fields: [userId], references: [id])
   userId                 String       @map("user_id")
@@ -258,6 +312,7 @@ model Review {
   variationOptionId      String?      @map("variation_option_id")
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
+  User                   User         @relation(fields: [userId], references: [id])
 }
 
 model Feedback {
@@ -270,6 +325,8 @@ model Feedback {
   negative  Boolean?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  Review    Review?  @relation(fields: [reviewId], references: [id])
+  reviewId  String?
 }
 
 model Report {
@@ -281,6 +338,8 @@ model Report {
   message   String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  Review    Review?  @relation(fields: [reviewId], references: [id])
+  reviewId  String?
 }
 
 // TODO doesnt it needs any relationship with Product and Order?
@@ -310,6 +369,8 @@ model Variation {
   options   VariationOption[]
   createdAt DateTime          @default(now()) @map("created_at")
   updatedAt DateTime          @updatedAt @map("updated_at")
+  Product   Product?          @relation(fields: [productId], references: [id])
+  productId String?
 }
 
 model VariationOption {
@@ -373,6 +434,8 @@ model AttributeValue {
   attributeId String    @map("attribute_id")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
+  Product     Product?  @relation(fields: [productId], references: [id])
+  productId   String?
 }
 
 enum ProductStatus {
@@ -418,40 +481,58 @@ enum PaymentStatusType {
 }
 
 model Order {
-  id                    String              @id @default(cuid())
-  trackingNumber        String              @map("tracking_number")
-  customerId            Int                 @map("customer_id")
-  customerContact       String              @map("customer_contact")
-  customer              User                @relation(fields: [customerId], references: [id])
-  parentOrderId         String?             @map("parent_order_id")
-  parentOrder           Order?              @relation("OrderParent", fields: [parentOrderId], references: [id])
-  children              Order[]             @relation("OrderParent")
-  items                 OrderProductPivot[] @relation("OrderProducts")
-  orderStatus           OrderStatusType     @default(PENDING) @map("order_status")
-  paymentStatus         PaymentStatusType   @default(PENDING) @map("payment_status")
-  amount                Float
-  salesTax              Float               @map("sales_tax")
-  total                 Float
-  paidTotal             Float               @map("paid_total")
-  paymentId             String?             @map("payment_id")
-  paymentGateway        PaymentGatewayType
-  couponId              Int?                @map("coupon_id")
-  coupon                Coupon?             @relation(fields: [couponId], references: [id])
-  shopId                Int                 @map("shop_id")
-  shop                  Shop                @relation(fields: [shopId], references: [id])
-  discount              Float?
-  deliveryFee           Float               @map("delivery_fee")
-  deliveryTime          String              @map("delivery_time")
-  products              Product[]           @relation("OrderProducts")
-  billingAddressId      Int                 @map("billing_address_id")
-  billingAddress        UserAddress         @relation(fields: [billingAddressId], references: [id])
-  //Error validating model "Order": Ambiguous relation detected. The fields `billingAddress` and `shippingAddress` in model `Order` both refer to `UserAddress`. Please provide different relation names for them by adding `@relation(<name>).
-  shippingAddressId     Int                 @map("shipping_address_id")
-  shippingAddress       UserAddress         @relation(fields: [shippingAddressId], references: [id])
+  id              String              @id @default(cuid())
+  trackingNumber  String              @map("tracking_number")
+  customerId      Int                 @map("customer_id")
+  customerContact String              @map("customer_contact")
+  customer        User                @relation(fields: [customerId], references: [id])
+  parentOrderId   String?             @map("parent_order_id")
+  parentOrder     Order?              @relation("OrderParent", fields: [parentOrderId], references: [id])
+  children        Order[]             @relation("OrderParent")
+  items           OrderProductPivot[] @relation("OrderProducts")
+  orderStatus     OrderStatusType     @default(PENDING) @map("order_status")
+  paymentStatus   PaymentStatusType   @default(PENDING) @map("payment_status")
+  amount          Float
+  salesTax        Float               @map("sales_tax")
+  total           Float
+  paidTotal       Float               @map("paid_total")
+  paymentId       String?             @map("payment_id")
+  paymentGateway  PaymentGatewayType
+  couponId        Int?                @map("coupon_id")
+  coupon          Coupon?             @relation(fields: [couponId], references: [id])
+  shopId          Int                 @map("shop_id")
+  shop            Shop                @relation(fields: [shopId], references: [id])
+  discount        Float?
+  deliveryFee     Float               @map("delivery_fee")
+  deliveryTime    String              @map("delivery_time")
+  products        Product[]           @relation("OrderProducts")
+
   language              String
-  translatedLanguages   String[]            @map("translated_languages")
+  translatedLanguages   String[]       @map("translated_languages")
   paymentIntent         PaymentIntent?
-  alteredPaymentGateway String?             @map("altered_payment_gateway")
+  alteredPaymentGateway String?        @map("altered_payment_gateway")
+  Review                Review[]
+  OrderAddress          OrderAddress[]
+  Coupon                Coupon?        @relation(fields: [couponId], references: [id])
+  Product               Product[]
+}
+
+//NOTE OrderAddress is immutable to avoid issues with address changes after order creation
+model OrderAddress {
+  id            String   @id @default(cuid())
+  orderId       String   @map("order_id")
+  order         Order    @relation(fields: [orderId], references: [id])
+  receiverName  String   @map("receiver_name")
+  houseNumber   String?  @map("house_number")
+  buildingName  String?  @map("building_name")
+  streetAddress String   @map("street_address")
+  geolocation   Json?    @map("geolocation")
+  country       String
+  city          String
+  state         String
+  zip           String
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 }
 
 model Coupon {
@@ -475,6 +556,7 @@ model Coupon {
   isApprove           Boolean?    @default(false) @map("is_approve")
   createdAt           DateTime    @default(now()) @map("created_at")
   updatedAt           DateTime    @updatedAt @map("updated_at")
+  Order               Order[]
 }
 
 enum CouponType {
